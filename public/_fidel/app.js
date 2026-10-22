@@ -14,7 +14,22 @@ window.addEventListener('pageshow', (e) => {
   setTimeout(() => document.body.classList.add('loaded'), 900);
 });
 const app = document.getElementById('app');
-const state = { base: location.origin, links: [], q: '', open: null, globe: null };
+const state = { base: location.origin, links: [], q: '', open: null, globe: null, name: 'Fidel URLs' };
+const DEFAULT_NAME = 'Fidel URLs';
+
+// Nome do painel escolhido por quem usa. O padrão mantém o visual de duas cores.
+function wordmarkInner(name) {
+  return name && name !== DEFAULT_NAME ? `<b>${esc(name)}</b>` : '<b>Fidel</b><span>URLs</span>';
+}
+function applyName(name) {
+  state.name = (name || DEFAULT_NAME).trim() || DEFAULT_NAME;
+  document.title = state.name;
+  try {
+    localStorage.setItem('fidel_name', state.name);
+  } catch {}
+  const mark = document.querySelector('.ld-mark');
+  if (mark) mark.innerHTML = wordmarkInner(state.name);
+}
 
 /* ---------- utilidades ---------- */
 
@@ -110,7 +125,7 @@ function renderLogin(setupError) {
   app.innerHTML = `
     <div class="login">
       <div class="stage"><canvas id="globe" aria-hidden="true"></canvas></div>
-      <div class="brand"><h1 class="wordmark"><b>Fidel</b><span>URLs</span></h1></div>
+      <div class="brand"><h1 class="wordmark">${wordmarkInner(state.name)}</h1></div>
       <form id="login" novalidate>
         ${setupError ? `<p class="note">${esc(setupError)}</p>` : ''}
         <label class="sr-only" for="pw">Senha</label>
@@ -152,10 +167,55 @@ function renderLogin(setupError) {
 
 /* ---------- estrutura ---------- */
 
+function brandBtnHtml() {
+  return `<button class="wordmark brand-btn" id="brand" type="button" aria-label="Trocar o nome do painel">${wordmarkInner(state.name)}<svg class="pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>`;
+}
+
+function bindBrand() {
+  document.getElementById('brand')?.addEventListener('click', renameBrand);
+}
+
+function renameBrand() {
+  const box = document.getElementById('brandbox');
+  if (!box) return;
+  box.innerHTML = `
+    <form class="rename" id="rename" novalidate>
+      <input class="input" id="brand-input" value="${esc(state.name)}" maxlength="40" aria-label="Nome do painel" autocomplete="off" placeholder="Nome do painel">
+      <button class="btn btn-chrome" type="submit"><span class="label">OK</span></button>
+      <button class="btn btn-ghost" type="button" data-act="cancel" aria-label="Cancelar">✕</button>
+    </form>`;
+  const form = document.getElementById('rename');
+  const input = document.getElementById('brand-input');
+  input.focus();
+  input.select();
+  const restore = () => {
+    box.innerHTML = brandBtnHtml();
+    bindBrand();
+  };
+  form.querySelector('[data-act="cancel"]').addEventListener('click', restore);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') restore();
+  });
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = form.querySelector('button[type="submit"]');
+    busy(btn, true);
+    try {
+      const d = await api('/settings', { method: 'PATCH', body: { name: input.value } });
+      applyName(d.name);
+      toast('Nome salvo');
+      restore();
+    } catch (ex) {
+      toast(ex.message, true);
+      busy(btn, false);
+    }
+  });
+}
+
 function renderShell() {
   app.innerHTML = `
     <header class="topbar">
-      <a class="wordmark" href="#/" aria-label="Fidel URLs"><b>Fidel</b><span>URLs</span></a>
+      <span class="brandbox" id="brandbox">${brandBtnHtml()}</span>
       ${state.open ? '' : `<button class="btn btn-ghost btn-icon" type="button" id="logout" aria-label="Sair">${icon('logout')}</button>`}
     </header>
     <div class="wrap">
@@ -165,6 +225,7 @@ function renderShell() {
       </div>
       <main id="view" role="tabpanel"></main>
     </div>`;
+  bindBrand();
   app.querySelector('#logout')?.addEventListener('click', async () => {
     try {
       await api('/logout', { method: 'POST' });
@@ -488,6 +549,7 @@ async function boot() {
     ready();
     return;
   }
+  applyName(me.name);
   if (!me.authed) return renderLogin(me.setup_error);
   state.base = me.base || location.origin;
   state.open = Boolean(me.open);

@@ -41,6 +41,18 @@
   </svg>
   <div class="ld-mark"><b>Fidel</b><span>URLs</span></div>
 </div>
+<script>
+  // Mostra o nome salvo já na tela de carregamento, sem esperar o painel abrir.
+  try {
+    var n = localStorage.getItem('fidel_name');
+    if (n && n !== 'Fidel URLs') {
+      n = n.replace(/[<>&]/g, '').slice(0, 40);
+      document.querySelector('.ld-mark').innerHTML = '<b></b>';
+      document.querySelector('.ld-mark b').textContent = n;
+      document.title = n;
+    }
+  } catch (e) {}
+</script>
 <div id="app"></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <noscript><p style="padding:24px;color:#fff;font-family:sans-serif">Ative o JavaScript para usar o Fidel URLs.</p></noscript>

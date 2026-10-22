@@ -67,6 +67,19 @@ a { color: inherit; }
   animation: chrome-roll 7s ease-in-out infinite;
 }
 .wordmark span { color: var(--ash); font-size: 0.72em; letter-spacing: 0.08em; }
+
+/* Nome do painel editável no topo */
+.brandbox { min-width: 0; flex: 1 1 auto; }
+.brand-btn {
+  appearance: none; border: 0; background: transparent; cursor: pointer; padding: 4px 0;
+  max-width: 100%; overflow: hidden;
+}
+.brand-btn b { overflow: hidden; text-overflow: ellipsis; }
+.brand-btn .pen { width: 15px; height: 15px; color: var(--ash); opacity: 0; flex: none; transition: opacity 0.2s ease; align-self: center; }
+.brand-btn:hover .pen, .brand-btn:focus-visible .pen { opacity: 1; }
+.rename { display: flex; align-items: center; gap: 8px; width: 100%; }
+.rename .input { min-height: 40px; flex: 1 1 auto; min-width: 0; font-family: var(--display); font-size: 15px; }
+.rename .btn { min-height: 40px; padding: 0 14px; flex: none; }
 @keyframes chrome-roll { 0%, 100% { background-position: 0 0; } 50% { background-position: 0 100%; } }
 
 /* Estrutura */

@@ -6,6 +6,7 @@ import { serialize, findBySlug, createLink, updateLink, isReserved, canProxy } f
 import { maskPage, botPage, notFoundPage } from '../lib/pages.js';
 import { proxy, mapLocation, PX_COOKIE } from '../lib/proxy.js';
 import { isBot, isBrowser } from '../lib/agent.js';
+import { getName, setName } from '../lib/settings.js';
 
 const API = '/_fidel/api';
 const SLUG_RE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/;
@@ -147,10 +148,12 @@ async function api(req, res, route, params) {
   if (a === 'logout' && m === 'POST') return json(res, 200, { ok: true }, { 'Set-Cookie': clearSessionCookie(req) });
   if (a === 'me' && m === 'GET') {
     const kind = authKind(req);
-    return json(res, 200, { authed: Boolean(kind), open: kind === 'open', base });
+    return json(res, 200, { authed: Boolean(kind), open: kind === 'open', base, name: await getName() });
   }
 
   requireAuth(req);
+
+  if (a === 'settings' && m === 'PATCH') return json(res, 200, { name: await setName((await readJson(req)).name) });
 
   if (a === 'links' && !b) {
     if (m === 'GET') {
