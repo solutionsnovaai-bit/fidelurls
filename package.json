@@ -1,0 +1,13 @@
+{
+  "name": "fidel-urls",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Cole um link ou IP, dê um nome e receba um link curto mascarado no seu domínio.",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.js"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}
