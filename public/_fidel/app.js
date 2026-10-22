@@ -264,7 +264,7 @@ function viewShorten() {
       </div>
       <div class="field">
         <label for="name">Nome do link</label>
-        <div class="prefixed"><span class="pre">${esc(myHost())}/</span><input id="name" class="input" type="text" placeholder="deixe vazio para gerar" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="64"></div>
+        <input id="name" class="input" type="text" placeholder="Digite o nome que quiser" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="64">
         <p class="hint" id="slug-hint"></p>
       </div>
       <label class="switch">
@@ -286,7 +286,7 @@ function viewShorten() {
     const s = previewName(nameInput.value);
     const taken = Boolean(s) && state.links.some((l) => l.slug.toLowerCase() === s);
     hint.classList.toggle('bad', taken);
-    hint.textContent = !s ? '' : taken ? `${myHost()}/${s} já existe. Escolha outro nome.` : `Vai ficar: ${myHost()}/${s}`;
+    hint.textContent = !s ? '' : taken ? `"${s}" já existe. Escolha outro nome.` : s !== nameInput.value.trim() ? `Vai ficar: ${s}` : '';
   };
   nameInput.addEventListener('input', updateHint);
 
@@ -453,7 +453,7 @@ function editorRow(l) {
       </div>
       <div class="field">
         <label>Nome do link</label>
-        <div class="prefixed"><span class="pre">${esc(myHost())}/</span><input class="input f-name" type="text" value="${esc(l.slug)}" maxlength="64" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+        <input class="input f-name" type="text" value="${esc(l.slug)}" maxlength="64" autocomplete="off" autocapitalize="off" spellcheck="false">
       </div>
       <label class="switch">
         <span class="txt"><b>Mascarar</b><small>Abrir o destino dentro do link, sem mostrar o IP.</small></span>

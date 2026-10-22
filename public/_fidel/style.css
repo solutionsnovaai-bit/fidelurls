@@ -71,10 +71,9 @@ a { color: inherit; }
 /* Nome do painel editável no topo */
 .brandbox { min-width: 0; flex: 1 1 auto; }
 .brand-btn {
-  appearance: none; border: 0; background: transparent; cursor: pointer; padding: 4px 0;
-  max-width: 100%; overflow: hidden;
+  -webkit-appearance: none; appearance: none; border: 0; border-radius: 0; background: none; box-shadow: none;
+  cursor: pointer; padding: 4px 0; max-width: 100%; color: inherit; -webkit-tap-highlight-color: transparent;
 }
-.brand-btn b { overflow: hidden; text-overflow: ellipsis; }
 .brand-btn .pen { width: 15px; height: 15px; color: var(--ash); opacity: 0; flex: none; transition: opacity 0.2s ease; align-self: center; }
 .brand-btn:hover .pen, .brand-btn:focus-visible .pen { opacity: 1; }
 .rename { display: flex; align-items: center; gap: 8px; width: 100%; }
