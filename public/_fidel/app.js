@@ -1,6 +1,12 @@
 import { Globe } from './globe.js';
 
 const API = '/_fidel/api';
+const T0 = performance.now();
+// Some com a tela de carregamento depois de pelo menos 0,9s, para o giro aparecer.
+function ready() {
+  document.body.classList.remove('booting');
+  setTimeout(() => document.body.classList.add('loaded'), Math.max(0, 900 - (performance.now() - T0)));
+}
 const app = document.getElementById('app');
 const state = { base: location.origin, links: [], q: '', open: null, globe: null };
 
@@ -110,7 +116,7 @@ function renderLogin(setupError) {
         <p class="error-text" hidden></p>
       </form>
     </div>`;
-  document.body.classList.remove('booting');
+  ready();
   mountGlobe();
   const form = document.getElementById('login');
   const err = form.querySelector('.error-text');
@@ -473,7 +479,7 @@ async function boot() {
     me = await api('/me');
   } catch (ex) {
     app.innerHTML = `<div class="login"><p class="note" style="align-self:center">${esc(ex.message)}</p></div>`;
-    document.body.classList.remove('booting');
+    ready();
     return;
   }
   if (!me.authed) return renderLogin(me.setup_error);
@@ -487,7 +493,7 @@ async function boot() {
     .catch(() => {});
   renderShell();
   route();
-  document.body.classList.remove('booting');
+  ready();
 }
 
 window.addEventListener('hashchange', route);

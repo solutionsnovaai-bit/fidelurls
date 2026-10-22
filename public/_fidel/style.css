@@ -24,6 +24,30 @@ body {
   -webkit-font-smoothing: antialiased; overflow-x: hidden;
 }
 body.booting #app { opacity: 0; }
+
+/* Tela de carregamento */
+#loader {
+  position: fixed; inset: 0; z-index: 100; background: #000;
+  display: grid; place-content: center; justify-items: center; gap: 22px;
+  transition: opacity 0.45s ease, visibility 0.45s;
+}
+body.loaded #loader { opacity: 0; visibility: hidden; pointer-events: none; }
+.ld-globe { width: 150px; height: 150px; overflow: visible; animation: ld-in 0.6s cubic-bezier(.2,.8,.2,1) both; }
+.ld-globe .ld-grid { fill: none; stroke: url(#ldc); stroke-width: 1; opacity: 0.9; }
+.ld-globe .m { animation: ld-spin 2.4s linear infinite; transform-box: fill-box; transform-origin: center; }
+.ld-globe .m:nth-child(2) { animation-delay: -0.4s; }
+.ld-globe .m:nth-child(3) { animation-delay: -0.8s; }
+.ld-globe .m:nth-child(4) { animation-delay: -1.2s; }
+.ld-globe .m:nth-child(5) { animation-delay: -1.6s; }
+.ld-globe .m:nth-child(6) { animation-delay: -2s; }
+.ld-globe .ld-edge { fill: none; stroke: url(#ldc); stroke-width: 1.6; }
+.ld-globe .ld-ring { fill: none; stroke: url(#ldc); stroke-width: 1.1; }
+.ld-globe .ld-ring.back { stroke: #3a3c41; }
+.ld-mark { font-family: var(--display); font-size: 22px; letter-spacing: 0.04em; display: flex; align-items: baseline; gap: 0.45em; animation: ld-in 0.6s 0.12s cubic-bezier(.2,.8,.2,1) both; }
+.ld-mark b { font-weight: 400; background: var(--chrome); background-size: 100% 220%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: chrome-roll 1.6s ease-in-out infinite; }
+.ld-mark span { color: var(--ash); font-size: 0.72em; letter-spacing: 0.08em; }
+@keyframes ld-spin { from { transform: scaleX(1); } 50% { transform: scaleX(0); } to { transform: scaleX(-1); } }
+@keyframes ld-in { from { opacity: 0; transform: scale(0.9); } }
 #app { transition: opacity 0.4s ease; }
 button, input { font: inherit; color: inherit; }
 a { color: inherit; }

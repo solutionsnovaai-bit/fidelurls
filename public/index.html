@@ -19,6 +19,28 @@
 <link rel="stylesheet" href="/_fidel/style.css">
 </head>
 <body class="booting">
+<div id="loader" aria-hidden="true">
+  <svg class="ld-globe" viewBox="-60 -60 120 120">
+    <defs>
+      <linearGradient id="ldc" x1="0" y1="0" x2="0.3" y2="1">
+        <stop offset="0" stop-color="#fff"/><stop offset="0.3" stop-color="#cfd2d7"/><stop offset="0.5" stop-color="#5e6167"/>
+        <stop offset="0.56" stop-color="#34363b"/><stop offset="0.74" stop-color="#e2e4e7"/><stop offset="1" stop-color="#8b8e94"/>
+      </linearGradient>
+      <radialGradient id="ldb" cx="0.38" cy="0.32" r="0.75"><stop offset="0" stop-color="#232428"/><stop offset="1" stop-color="#000"/></radialGradient>
+    </defs>
+    <ellipse class="ld-ring back" rx="55" ry="13" transform="rotate(-18)"/>
+    <circle r="34" fill="url(#ldb)"/>
+    <g class="ld-grid">
+      <ellipse class="m" rx="34" ry="34"/><ellipse class="m" rx="34" ry="34"/><ellipse class="m" rx="34" ry="34"/>
+      <ellipse class="m" rx="34" ry="34"/><ellipse class="m" rx="34" ry="34"/><ellipse class="m" rx="34" ry="34"/>
+      <path d="M-34 0H34M-29.4 -17H29.4M-29.4 17H29.4"/>
+    </g>
+    <circle r="34" class="ld-edge"/>
+    <path class="ld-ring" d="M-52.3 17A55 13 -18 0 0 52.3 -17" />
+    <circle r="2.2" fill="#fff" class="ld-sat"><animateMotion dur="2.4s" repeatCount="indefinite" path="M52.3 -17A55 13 -18 1 1 -52.3 17A55 13 -18 1 1 52.3 -17"/></circle>
+  </svg>
+  <div class="ld-mark"><b>Fidel</b><span>URLs</span></div>
+</div>
 <div id="app"></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <noscript><p style="padding:24px;color:#fff;font-family:sans-serif">Ative o JavaScript para usar o Fidel URLs.</p></noscript>
