@@ -1,5 +1,5 @@
 // Fidel URLs — função única: abre os links (redirecionando ou mascarando) e responde ao painel.
-import { q } from '../lib/db.js';
+import { q, dbReady } from '../lib/db.js';
 import { HttpError, json, html, redirect, readJson, clientIp, baseUrl, baseHost, parseCookies } from '../lib/http.js';
 import { authKind, requireAuth, safeEqual, makeSessionCookie, clearSessionCookie, panelPassword } from '../lib/auth.js';
 import { serialize, findBySlug, createLink, updateLink, isReserved, canProxy } from '../lib/links.js';
@@ -148,7 +148,7 @@ async function api(req, res, route, params) {
   if (a === 'logout' && m === 'POST') return json(res, 200, { ok: true }, { 'Set-Cookie': clearSessionCookie(req) });
   if (a === 'me' && m === 'GET') {
     const kind = authKind(req);
-    return json(res, 200, { authed: Boolean(kind), open: kind === 'open', base, name: await getName() });
+    return json(res, 200, { authed: Boolean(kind), open: kind === 'open', base, name: await getName(), db: await dbReady() });
   }
 
   requireAuth(req);

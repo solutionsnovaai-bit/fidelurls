@@ -538,6 +538,45 @@ function bindEditor(ul, link) {
   });
 }
 
+/* ---------- falta ligar o armazenamento ---------- */
+
+function renderSetup() {
+  state.globe?.destroy();
+  state.globe = null;
+  app.innerHTML = `
+    <div class="setup">
+      <div class="stage"><canvas id="globe" aria-hidden="true"></canvas></div>
+      <h1 class="wordmark setup-mark">${wordmarkInner(state.name)}</h1>
+      <p class="setup-lede">Falta 1 passo pra ligar. É uma vez só; depois o painel abre direto.</p>
+      <ol class="steps">
+        <li>Na Vercel, abra este projeto e vá na aba <b>Storage</b>.</li>
+        <li>Toque em <b>Create Database</b>, escolha <b>Neon</b> e <b>Connect</b>.</li>
+        <li>Vá em <b>Deployments</b> e dê <b>Redeploy</b> no último.</li>
+        <li>Volte aqui e toque em <b>Já liguei</b>.</li>
+      </ol>
+      <button class="btn btn-chrome btn-big" type="button" id="recheck"><span class="label">Já liguei</span></button>
+      <p class="setup-foot">Guarda os links e mantém o IP escondido. Sem isso, o link não abre.</p>
+    </div>`;
+  ready();
+  mountGlobe();
+  const btn = document.getElementById('recheck');
+  btn.addEventListener('click', async () => {
+    busy(btn, true);
+    try {
+      const me = await api('/me');
+      if (me.db) {
+        state.globe?.fire(4);
+        return boot();
+      }
+      toast('Ainda não achei o banco. Confere se o Redeploy terminou.', true);
+    } catch {
+      toast('Tenta de novo em instantes.', true);
+    } finally {
+      busy(btn, false);
+    }
+  });
+}
+
 /* ---------- início ---------- */
 
 async function boot() {
@@ -550,6 +589,7 @@ async function boot() {
     return;
   }
   applyName(me.name);
+  if (me.db === false) return renderSetup();
   if (!me.authed) return renderLogin(me.setup_error);
   state.base = me.base || location.origin;
   state.open = Boolean(me.open);
