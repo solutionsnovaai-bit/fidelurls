@@ -1,5 +1,5 @@
 // Servidor local que imita a Vercel: arquivos de public/ primeiro, o resto vai para api/index.js.
-// Uso: DATABASE_URL=... ADMIN_PASSWORD=... npm run dev
+// Uso: DATABASE_URL=... npm run dev  (SENHA_PAINEL=... se quiser pedir senha)
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';

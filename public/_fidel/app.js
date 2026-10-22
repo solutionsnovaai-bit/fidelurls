@@ -144,7 +144,7 @@ function renderShell() {
   app.innerHTML = `
     <header class="topbar">
       <a class="wordmark" href="#/" aria-label="Fidel URLs"><b>Fidel</b><span>URLs</span></a>
-      <button class="btn btn-ghost btn-icon" type="button" id="logout" aria-label="Sair">${icon('logout')}</button>
+      ${state.open ? '' : `<button class="btn btn-ghost btn-icon" type="button" id="logout" aria-label="Sair">${icon('logout')}</button>`}
     </header>
     <div class="wrap">
       <div class="seg tabs" role="tablist" aria-label="Seções">
@@ -153,7 +153,7 @@ function renderShell() {
       </div>
       <main id="view" role="tabpanel"></main>
     </div>`;
-  app.querySelector('#logout').addEventListener('click', async () => {
+  app.querySelector('#logout')?.addEventListener('click', async () => {
     try {
       await api('/logout', { method: 'POST' });
     } catch {}
@@ -478,6 +478,7 @@ async function boot() {
   }
   if (!me.authed) return renderLogin(me.setup_error);
   state.base = me.base || location.origin;
+  state.open = Boolean(me.open);
   // Lista carregada logo de cara para avisar nome repetido já na aba Encurtar.
   api('/links')
     .then((d) => {

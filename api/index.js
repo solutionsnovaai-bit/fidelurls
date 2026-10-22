@@ -1,7 +1,7 @@
 // Fidel URLs — função única: abre os links (redirecionando ou mascarando) e responde ao painel.
 import { q } from '../lib/db.js';
 import { HttpError, json, html, redirect, readJson, clientIp, baseUrl, baseHost, parseCookies } from '../lib/http.js';
-import { authKind, requireAuth, safeEqual, makeSessionCookie, clearSessionCookie } from '../lib/auth.js';
+import { authKind, requireAuth, safeEqual, makeSessionCookie, clearSessionCookie, panelPassword } from '../lib/auth.js';
 import { serialize, findBySlug, createLink, updateLink, isReserved, canProxy } from '../lib/links.js';
 import { maskPage, botPage, notFoundPage } from '../lib/pages.js';
 import { proxy, mapLocation, PX_COOKIE } from '../lib/proxy.js';
@@ -146,12 +146,8 @@ async function api(req, res, route, params) {
   if (a === 'login' && m === 'POST') return login(req, res);
   if (a === 'logout' && m === 'POST') return json(res, 200, { ok: true }, { 'Set-Cookie': clearSessionCookie(req) });
   if (a === 'me' && m === 'GET') {
-    try {
-      return json(res, 200, { authed: Boolean(authKind(req)), base });
-    } catch (err) {
-      if (err instanceof HttpError) return json(res, 200, { authed: false, base, setup_error: err.message });
-      throw err;
-    }
+    const kind = authKind(req);
+    return json(res, 200, { authed: Boolean(kind), open: kind === 'open', base });
   }
 
   requireAuth(req);
@@ -176,8 +172,8 @@ async function api(req, res, route, params) {
 
 async function login(req, res) {
   const ip = clientIp(req) || 'desconhecido';
-  const pass = process.env.ADMIN_PASSWORD;
-  if (!pass) throw new HttpError(500, 'Defina a variável ADMIN_PASSWORD na Vercel.');
+  const pass = panelPassword();
+  if (!pass) return json(res, 200, { ok: true, open: true }); // acesso livre: nada a conferir
   const { rows } = await q(`select count(*)::int as n from auth_fails where ip = $1 and ts > now() - interval '15 minutes'`, [ip]);
   if (rows[0].n >= 8) throw new HttpError(429, 'Muitas tentativas. Espere 15 minutos e tente de novo.');
   const body = await readJson(req);

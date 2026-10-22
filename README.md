@@ -20,24 +20,27 @@ Sem a máscara, o link só redireciona pro destino, igual a um encurtador comum.
 
 1. **Vercel**: *Add New › Project* e importe este repositório. Em *Framework Preset* deixe **Other**. Pode clicar em *Deploy* (a primeira versão pede o banco, é normal).
 2. **Banco**: no projeto, aba **Storage › Create Database › Neon**. Escolha a região de **São Paulo** se aparecer e conecte ao projeto. A variável `DATABASE_URL` é criada sozinha e as tabelas também.
-3. **Senha**: em *Settings › Environment Variables*, crie `ADMIN_PASSWORD` com a senha para entrar no painel.
-4. **Redeploy**: aba *Deployments*, nos três pontinhos do último deploy, *Redeploy*.
-5. **Domínio**: *Settings › Domains*, adicione seu domínio curto e siga o DNS. Os links passam a sair com ele. Se tiver mais de um domínio e quiser fixar um, crie `PUBLIC_BASE_URL` (ex.: `https://seudominio.com`).
+3. **Redeploy**: aba *Deployments*, nos três pontinhos do último deploy, *Redeploy*.
+4. **Domínio**: *Settings › Domains*, adicione seu domínio curto e siga o DNS. Os links passam a sair com ele. Se tiver mais de um domínio e quiser fixar um, crie `PUBLIC_BASE_URL` (ex.: `https://seudominio.com`).
 
-Abra o domínio, digite a senha e use.
+Abra o domínio e use. O painel abre direto, sem senha.
+
+### Acesso livre
+
+Sem senha, qualquer pessoa que abrir o domínio principal consegue criar, editar e excluir links. Para voltar a pedir senha, crie a variável `SENHA_PAINEL` na Vercel com a senha que quiser e faça um *Redeploy*.
 
 ### Variáveis
 
 | Variável | Para quê |
 |---|---|
-| `ADMIN_PASSWORD` | Senha do painel (obrigatória) |
+| `SENHA_PAINEL` | Opcional. Se existir, o painel pede essa senha |
 | `DATABASE_URL` | Banco Postgres (o Neon preenche) |
 | `PUBLIC_BASE_URL` | Opcional. Fixa o domínio dos links |
 | `API_KEY` | Opcional. Chave para criar links por fora (Make, script) |
 
 ## Criar links por fora (opcional)
 
-Com `API_KEY` definida:
+Com acesso livre, a chamada abaixo funciona sem chave. Se ligar a senha (`SENHA_PAINEL`), defina também `API_KEY` e mande no cabeçalho:
 
 ```
 POST https://seudominio.com/_fidel/api/links
@@ -55,7 +58,7 @@ Node.js 20+ e um Postgres.
 
 ```
 npm install
-DATABASE_URL=postgres://... ADMIN_PASSWORD=sua-senha npm run dev
+DATABASE_URL=postgres://... npm run dev
 ```
 
 Abra `http://localhost:3000`.
