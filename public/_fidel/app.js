@@ -7,6 +7,12 @@ function ready() {
   document.body.classList.remove('booting');
   setTimeout(() => document.body.classList.add('loaded'), Math.max(0, 900 - (performance.now() - T0)));
 }
+// Voltar pelo botão do navegador restaura a página sem recarregar: mostra o load de novo.
+window.addEventListener('pageshow', (e) => {
+  if (!e.persisted) return;
+  document.body.classList.remove('loaded');
+  setTimeout(() => document.body.classList.add('loaded'), 900);
+});
 const app = document.getElementById('app');
 const state = { base: location.origin, links: [], q: '', open: null, globe: null };
 
