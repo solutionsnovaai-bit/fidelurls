@@ -11,6 +11,10 @@ const ICON = {
   open: '<path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
   logout: '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/>',
+  paste: '<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1M9 11h6M9 15h4"/>',
+  eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  share: '<path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
 };
 const icon = (n) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]}</svg>`;
@@ -98,7 +102,10 @@ function renderLogin(setupError) {
       <form id="login" novalidate>
         ${setupError ? `<p class="note">${esc(setupError)}</p>` : ''}
         <label class="sr-only" for="pw">Senha</label>
-        <input id="pw" class="input" type="password" placeholder="Senha" autocomplete="current-password">
+        <div class="inline-field">
+          <input id="pw" class="input" type="password" placeholder="Senha" autocomplete="current-password">
+          <button class="btn btn-ghost btn-icon in-btn" type="button" id="pw-eye" aria-label="Mostrar senha" aria-pressed="false">${icon('eye')}</button>
+        </div>
         <button class="btn btn-chrome btn-big" type="submit"><span class="label">Entrar</span></button>
         <p class="error-text" hidden></p>
       </form>
@@ -107,6 +114,13 @@ function renderLogin(setupError) {
   mountGlobe();
   const form = document.getElementById('login');
   const err = form.querySelector('.error-text');
+  form.querySelector('#pw-eye').addEventListener('click', (e) => {
+    const pw = form.querySelector('#pw');
+    const show = pw.type === 'password';
+    pw.type = show ? 'text' : 'password';
+    e.currentTarget.setAttribute('aria-pressed', String(show));
+    e.currentTarget.setAttribute('aria-label', show ? 'Esconder senha' : 'Mostrar senha');
+  });
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = form.querySelector('button');
@@ -170,7 +184,10 @@ function viewShorten() {
     <form class="composer" id="create" novalidate>
       <div class="field">
         <label for="url">Link ou IP de destino</label>
-        <input id="url" class="input" type="text" inputmode="url" placeholder="Ex.: 123.45.67.89:8080" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div class="inline-field has-wide">
+          <input id="url" class="input" type="text" inputmode="url" placeholder="Ex.: 123.45.67.89:8080" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <button class="btn btn-ghost in-btn wide" type="button" id="paste">${icon('paste')}Colar</button>
+        </div>
       </div>
       <div class="field">
         <label for="name">Nome do link</label>
@@ -190,17 +207,42 @@ function viewShorten() {
   const form = view.querySelector('#create');
   const err = form.querySelector('.error-text');
   const nameInput = form.querySelector('#name');
+  const urlInput = form.querySelector('#url');
   const hint = form.querySelector('#slug-hint');
-  nameInput.addEventListener('input', () => {
+  const updateHint = () => {
     const s = previewName(nameInput.value);
-    hint.textContent = s && s !== nameInput.value.trim().toLowerCase() ? `Vai virar: ${myHost()}/${s}` : '';
+    const taken = Boolean(s) && state.links.some((l) => l.slug.toLowerCase() === s);
+    hint.classList.toggle('bad', taken);
+    hint.textContent = !s ? '' : taken ? `${myHost()}/${s} já existe. Escolha outro nome.` : `Vai ficar: ${myHost()}/${s}`;
+  };
+  nameInput.addEventListener('input', updateHint);
+
+  const pasteBtn = form.querySelector('#paste');
+  if (!navigator.clipboard?.readText) pasteBtn.hidden = true;
+  pasteBtn.addEventListener('click', async () => {
+    try {
+      const t = (await navigator.clipboard.readText()).trim();
+      if (!t) return toast('Não tem nada copiado.', true);
+      urlInput.value = t;
+      nameInput.focus();
+    } catch {
+      toast('Não deu para colar. Segure no campo e cole.', true);
+    }
   });
+
+  // Link recebido pelo "Compartilhar" do celular (app instalado na tela inicial)
+  const sp = new URLSearchParams(location.search);
+  const shared = sp.get('url') || (sp.get('text') || '').match(/\S+\.\S+/)?.[0];
+  if (shared) {
+    urlInput.value = shared;
+    history.replaceState(null, '', location.pathname + location.hash);
+  }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     err.hidden = true;
     const btn = form.querySelector('button[type="submit"]');
-    const url = form.querySelector('#url').value.trim();
+    const url = urlInput.value.trim();
     if (!url) {
       err.textContent = 'Cole o link ou o IP de destino.';
       err.hidden = false;
@@ -220,7 +262,7 @@ function viewShorten() {
       view.querySelector('#result').innerHTML = resultCard(link);
       bindResult(view.querySelector('#result'), link);
       form.reset();
-      hint.textContent = '';
+      updateHint();
       view.querySelector('#result').scrollIntoView({ behavior: 'smooth', block: 'center' });
     } catch (ex) {
       err.textContent = ex.message;
@@ -239,14 +281,29 @@ function resultCard(link) {
       ${maskNote(link)}
       <div class="actions">
         <button class="btn btn-chrome" type="button" data-act="copy">${icon('copy')}<span class="label">Copiar</span></button>
+        ${navigator.share ? `<button class="btn" type="button" data-act="share">${icon('share')}Enviar</button>` : ''}
         <a class="btn" href="${esc(link.short_url)}" target="_blank" rel="noopener">${icon('open')}Abrir</a>
-        <a class="btn btn-ghost" href="#/editar">Editar</a>
+      </div>
+      <div class="actions minor">
+        <button class="btn btn-ghost" type="button" data-act="new">${icon('plus')}Criar outro</button>
       </div>
     </div>`;
 }
 
 function bindResult(root, link) {
   root.querySelector('[data-act="copy"]')?.addEventListener('click', () => copy(link.short_url));
+  root.querySelector('[data-act="share"]')?.addEventListener('click', async () => {
+    try {
+      await navigator.share({ url: link.short_url });
+    } catch (err) {
+      if (err?.name !== 'AbortError') copy(link.short_url);
+    }
+  });
+  root.querySelector('[data-act="new"]')?.addEventListener('click', () => {
+    root.innerHTML = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => document.getElementById('url')?.focus({ preventScroll: true }), 350);
+  });
 }
 
 /* ---------- aba Editar ---------- */
@@ -256,6 +313,7 @@ async function viewEdit() {
   view.innerHTML = `
     <div class="search">${icon('search')}<label class="sr-only" for="q">Buscar</label>
       <input id="q" class="input" type="search" placeholder="Buscar por nome ou destino" value="${esc(state.q)}" autocomplete="off"></div>
+    <p class="count" id="count"></p>
     <ul class="links" id="links"><li class="empty">Carregando…</li></ul>`;
   view.querySelector('#q').addEventListener('input', (e) => {
     state.q = e.target.value.trim();
@@ -278,27 +336,36 @@ function renderList() {
   const list = q
     ? state.links.filter((l) => l.slug.toLowerCase().includes(q) || l.url.toLowerCase().includes(q) || (l.title || '').toLowerCase().includes(q))
     : state.links;
+  const count = document.getElementById('count');
+  if (count) {
+    const total = state.links.length;
+    count.textContent = !total ? '' : q ? `${list.length} de ${total}` : `${total} ${total === 1 ? 'link' : 'links'}`;
+  }
   if (!list.length) {
-    ul.innerHTML = `<li class="empty">${state.q ? 'Nada encontrado.' : 'Nenhum link ainda. Crie um na aba Encurtar.'}</li>`;
+    ul.innerHTML = state.q
+      ? '<li class="empty">Nada encontrado.</li>'
+      : '<li class="empty">Nenhum link ainda. <a href="#/">Criar o primeiro</a></li>';
     return;
   }
   ul.innerHTML = list
     .map((l) =>
       state.open === l.slug
         ? `<li>${editorRow(l)}</li>`
-        : `<li><button class="row" type="button" data-slug="${esc(l.slug)}">
+        : `<li class="item"><button class="row" type="button" data-slug="${esc(l.slug)}" aria-label="Editar ${esc(bare(l.short_url))}">
              <span class="s chrome-text">${esc(bare(l.short_url))}</span>
-             <span class="d">${esc(bare(l.url))}${l.mask ? ' · máscara' : ''}</span>
+             <span class="d">${esc(bare(l.url))}${l.mask ? '<span class="tag">máscara</span>' : ''}</span>
              <span class="c"><b>${l.clicks}</b>${l.clicks === 1 ? 'acesso' : 'acessos'}</span>
-           </button></li>`
+           </button><button class="btn btn-ghost btn-icon quick" type="button" data-copy="${esc(l.short_url)}" aria-label="Copiar ${esc(bare(l.short_url))}">${icon('copy')}</button></li>`
     )
     .join('');
   ul.querySelectorAll('.row').forEach((b) =>
     b.addEventListener('click', () => {
       state.open = b.dataset.slug;
       renderList();
+      ul.querySelector('.editor')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     })
   );
+  ul.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', () => copy(b.dataset.copy)));
   list.forEach((l) => {
     if (state.open === l.slug) bindEditor(ul, l);
   });
@@ -322,10 +389,13 @@ function editorRow(l) {
       <div id="edit-note">${maskNote(l)}</div>
       <p class="error-text" hidden></p>
       <div class="actions">
-        <button class="btn btn-chrome" type="submit"><span class="label">Salvar</span></button>
-        <button class="btn" type="button" data-act="copy">${icon('copy')}Copiar</button>
-        <a class="btn" href="${esc(l.short_url)}" target="_blank" rel="noopener">${icon('open')}Abrir</a>
-        <button class="btn btn-danger" type="button" data-act="del">Excluir</button>
+        <button class="btn btn-chrome" type="submit" disabled><span class="label">Salvar</span></button>
+        <button class="btn" type="button" data-act="cancel">Cancelar</button>
+      </div>
+      <div class="actions minor">
+        <button class="btn btn-ghost" type="button" data-act="copy">${icon('copy')}Copiar</button>
+        <a class="btn btn-ghost" href="${esc(l.short_url)}" target="_blank" rel="noopener">${icon('open')}Abrir</a>
+        <button class="btn btn-ghost danger-text" type="button" data-act="del">Excluir</button>
       </div>
     </form>`;
 }
@@ -335,6 +405,25 @@ function bindEditor(ul, link) {
   if (!form) return;
   const err = form.querySelector('.error-text');
   form.querySelector('[data-act="copy"]').addEventListener('click', () => copy(link.short_url));
+
+  // Salvar só acende quando algo mudou; Cancelar ou Esc fecham sem salvar.
+  const save = form.querySelector('button[type="submit"]');
+  const snapshot = () =>
+    [form.querySelector('.f-url').value.trim(), previewName(form.querySelector('.f-name').value), form.querySelector('.f-mask').checked].join('|');
+  const initial = snapshot();
+  const sync = () => {
+    save.disabled = snapshot() === initial;
+  };
+  form.addEventListener('input', sync);
+  form.addEventListener('change', sync);
+  const close = () => {
+    state.open = null;
+    renderList();
+  };
+  form.querySelector('[data-act="cancel"]').addEventListener('click', close);
+  form.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') close();
+  });
   form.querySelector('[data-act="del"]').addEventListener('click', async (e) => {
     if (!confirm(`Excluir ${bare(link.short_url)}? O link para de funcionar.`)) return;
     busy(e.currentTarget, true);
@@ -389,6 +478,12 @@ async function boot() {
   }
   if (!me.authed) return renderLogin(me.setup_error);
   state.base = me.base || location.origin;
+  // Lista carregada logo de cara para avisar nome repetido já na aba Encurtar.
+  api('/links')
+    .then((d) => {
+      state.links = d.items;
+    })
+    .catch(() => {});
   renderShell();
   route();
   document.body.classList.remove('booting');

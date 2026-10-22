@@ -89,6 +89,24 @@ a { color: inherit; }
 .btn-danger { color: var(--danger); background: transparent; box-shadow: inset 0 0 0 1px rgba(255,107,95,0.35); }
 .btn-danger:hover { background: rgba(255,107,95,0.08); box-shadow: inset 0 0 0 1px rgba(255,107,95,0.6); }
 .btn-big { width: 100%; min-height: 54px; font-size: 17px; }
+.btn[disabled] { opacity: 0.4; cursor: default; }
+.btn[disabled]:active { transform: none; }
+.btn-chrome[disabled]::after { display: none; }
+.danger-text { color: var(--danger); }
+.danger-text:hover { background: rgba(255,107,95,0.08); }
+
+/* Campo com botão dentro (colar, mostrar senha) */
+.inline-field { position: relative; }
+.inline-field .input { padding-right: 56px; }
+.inline-field.has-wide .input { padding-right: 104px; }
+.inline-field .in-btn {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  min-height: 42px; width: 46px; padding: 0; color: var(--mist);
+}
+.inline-field .in-btn.wide { width: auto; padding: 0 14px; font-size: 14px; gap: 6px; }
+.inline-field .in-btn:active { transform: translateY(-50%) scale(0.96); }
+.inline-field .in-btn[aria-pressed='true'] { color: var(--mercury); }
+.inline-field .in-btn[hidden] { display: none; }
 .btn.is-busy { pointer-events: none; }
 .btn.is-busy .label { opacity: 0.3; }
 .btn.is-busy::before {
@@ -102,6 +120,7 @@ a { color: inherit; }
 .field + .field, .field + .switch { margin-top: 16px; }
 .field label { font-size: 14px; color: var(--mist); font-weight: 500; }
 .hint { font-size: 13px; color: var(--ash); margin: 0; min-height: 1.5em; }
+.hint.bad { color: var(--danger); }
 .input {
   width: 100%; min-height: 50px; padding: 12px 14px;
   background: #0a0a0c; border: 1px solid var(--line-2); border-radius: 14px; outline: none; font-size: 16px;
@@ -184,8 +203,19 @@ a { color: inherit; }
 .row .d { color: #74777d; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row .c { grid-row: 1 / span 2; grid-column: 2; text-align: right; color: var(--ash); font-size: 13px; }
 .row .c b { display: block; color: var(--mercury); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px; }
+.quick { color: var(--ash); }
+.quick:hover { color: var(--mercury); }
+.tag {
+  display: inline-block; font-size: 11px; font-weight: 600; color: var(--mist);
+  border: 1px solid var(--line-2); border-radius: 99px; padding: 0 7px; margin-left: 8px; vertical-align: 1px;
+}
+.count { color: var(--ash); font-size: 13px; margin: 10px 4px 0; min-height: 1.4em; }
+.empty a { color: var(--mercury); }
 .editor { padding: 6px 4px 22px; animation: rise 0.35s cubic-bezier(.2,.8,.2,1); }
 .editor .actions { margin-top: 20px; }
+.actions.minor { margin-top: 8px; gap: 2px; }
+.actions.minor .btn { min-height: 40px; padding: 0 12px; font-size: 14px; }
 .empty { color: var(--ash); font-size: 15px; padding: 22px 0; }
 
 /* Login */
